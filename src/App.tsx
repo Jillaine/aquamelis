@@ -8,20 +8,16 @@ type Entry = {
 
 function App() {
   // --- State ---
-  const [water, setWater] = useState(0);
-  const [electrolytes, setElectrolytes] = useState(0);
+  
   const [entries, setEntries] = useState<Entry[]>([]);
   const [resetHour, setResetHour] = useState(6);
   const [goal, setGoal] = useState(3000);
   const [dayKey, setDayKey] = useState("");
   const [showSheet, setShowSheet] = useState(false);
-  // --- Derived ---
-  const total = water + electrolytes;
-  const progress = Math.min(total / goal, 1);
-  const circumference = 2 * Math.PI * 100;
+  
+  
 
-  const electrolyteRatio = total > 0 ? electrolytes / total : 0;
-  const electrolyteLow = total > 1000 && electrolyteRatio < 0.25;
+  
 
   // --- Helpers ---
   const calculateDayKey = (hour: number) => {
@@ -47,39 +43,30 @@ function App() {
   // --- When day changes, load values ---
   useEffect(() => {
     if (!dayKey) return;
-
     const saved = localStorage.getItem(`aquamelis-${dayKey}`);
 
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      setWater(parsed.water || 0);
-      setElectrolytes(parsed.electrolytes || 0);
-    } else {
-      setWater(0);
-      setElectrolytes(0);
-    }
-
+if (saved) {
+  setEntries(JSON.parse(saved));
+} else {
+  setEntries([]);
+}
+    
   }, [dayKey]);
 
   // --- Save values ---
-  useEffect(() => {
-    if (!dayKey) return;
+ // --- Save values ---
+useEffect(() => {
+  if (!dayKey) return;
 
-    localStorage.setItem(
-      `aquamelis-${dayKey}`,
-      JSON.stringify({ water, electrolytes })
-    );
+  localStorage.setItem(
+    `aquamelis-${dayKey}`,
+    JSON.stringify(entries)
+  );
 
-  }, [water, electrolytes, dayKey]);
+}, [entries, dayKey]);
 
   // --- Actions ---
-  const addWater = (amount: number) => {
-    setWater(prev => prev + amount);
-  };
-
-  const addElectrolyte = (amount: number) => {
-    setElectrolytes(prev => prev + amount);
-  };
+  
 
   const addEntry = (type: string, amount: number) => {
   const newEntry: Entry = {
@@ -92,9 +79,25 @@ function App() {
 };
 
   const resetDay = () => {
-    setWater(0);
-    setElectrolytes(0);
-  };
+  setEntries([]);
+};
+
+  // --- Derived Totals ---
+const water = entries
+  .filter(e => e.type === "water")
+  .reduce((sum, e) => sum + e.amount, 0);
+
+const electrolytes = entries
+  .filter(e => e.type === "electrolyte")
+  .reduce((sum, e) => sum + e.amount, 0);
+
+const total = entries.reduce((sum, e) => sum + e.amount, 0);
+
+const progress = Math.min(total / goal, 1);
+const circumference = 2 * Math.PI * 100;
+
+const electrolyteRatio = total > 0 ? electrolytes / total : 0;
+const electrolyteLow = total > 1000 && electrolyteRatio < 0.25;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#AAE2DF] via-[#88CACC] to-[#66B2B7] text-[#0B2E33]">
@@ -161,14 +164,14 @@ function App() {
 
           <div className="grid grid-cols-2 gap-4">
             <button
-              onClick={() => addWater(150)}
+             onClick={() => addEntry("water", 150)}
               className="py-4 rounded-2xl bg-white/40 active:scale-95 transition"
             >
               +150 ml Water
             </button>
 
             <button
-              onClick={() => addWater(250)}
+              onClick={() => addEntry("water", 250)}
               className="py-4 rounded-2xl bg-white/40 active:scale-95 transition"
             >
               +250 ml Water
@@ -177,14 +180,14 @@ function App() {
 
           <div className="grid grid-cols-2 gap-4">
             <button
-              onClick={() => addElectrolyte(150)}
+              onClick={() => addEntry("electrolyte", 150)}
               className="py-4 rounded-2xl bg-[#0B3E63]/20 active:scale-95 transition"
             >
               +150 ml Electrolyte
             </button>
 
             <button
-              onClick={() => addElectrolyte(250)}
+              onClick={() => addEntry("electrolyte", 250)}
               className="py-4 rounded-2xl bg-[#0B3E63]/20 active:scale-95 transition"
             >
               +250 ml Electrolyte
@@ -269,7 +272,7 @@ function App() {
             key={drink}
             className="py-3 rounded-xl bg-[#AAE2DF] text-[#0B2E33]"
             onClick={() => {
-              addWater(250); // temporary — we'll refine logic next
+              addEntry(drink.toLowerCase(), 250);; // temporary — we'll refine logic next
               setShowSheet(false);
             }}
           >
