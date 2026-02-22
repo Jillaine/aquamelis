@@ -1,9 +1,16 @@
 import { useEffect, useState } from "react";
 
+type Entry = {
+  type: string;
+  amount: number;
+  timestamp: number;
+};
+
 function App() {
   // --- State ---
   const [water, setWater] = useState(0);
   const [electrolytes, setElectrolytes] = useState(0);
+  const [entries, setEntries] = useState<Entry[]>([]);
   const [resetHour, setResetHour] = useState(6);
   const [goal, setGoal] = useState(3000);
   const [dayKey, setDayKey] = useState("");
@@ -73,6 +80,16 @@ function App() {
   const addElectrolyte = (amount: number) => {
     setElectrolytes(prev => prev + amount);
   };
+
+  const addEntry = (type: string, amount: number) => {
+  const newEntry: Entry = {
+    type,
+    amount,
+    timestamp: Date.now(),
+  };
+
+  setEntries(prev => [...prev, newEntry]);
+};
 
   const resetDay = () => {
     setWater(0);
