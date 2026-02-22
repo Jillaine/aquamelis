@@ -7,7 +7,7 @@ function App() {
   const [resetHour, setResetHour] = useState(6);
   const [goal, setGoal] = useState(3000);
   const [dayKey, setDayKey] = useState("");
-
+  const [showSheet, setShowSheet] = useState(false);
   // --- Derived ---
   const total = water + electrolytes;
   const progress = Math.min(total / goal, 1);
@@ -173,6 +173,14 @@ function App() {
               +250 ml Electrolyte
             </button>
           </div>
+          <div className="flex justify-center">
+           <button
+                onClick={() => setShowSheet(true)}
+                className="mt-4 text-sm opacity-70 hover:opacity-100 transition"
+        >
+                 + Other Drink
+         </button>
+      </div>
 
         </section>
 
@@ -221,6 +229,42 @@ function App() {
         </section>
 
       </main>
+      {/* Bottom Sheet Overlay */}
+{showSheet && (
+  <>
+    {/* Background Dim */}
+    <div
+      className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
+      onClick={() => setShowSheet(false)}
+    />
+
+    {/* Bottom Sheet */}
+    <div className="fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl p-6 z-50 animate-slideUp">
+
+      <h2 className="text-lg font-semibold mb-4 text-[#0B2E33]">
+        Other Drinks
+      </h2>
+
+      <div className="grid grid-cols-2 gap-4">
+
+        {["Tea", "Coffee", "Diluted Juice", "Soup / Miso", "Coconut Water", "Soft Drink"].map((drink) => (
+          <button
+            key={drink}
+            className="py-3 rounded-xl bg-[#AAE2DF] text-[#0B2E33]"
+            onClick={() => {
+              addWater(250); // temporary — we'll refine logic next
+              setShowSheet(false);
+            }}
+          >
+            {drink}
+          </button>
+        ))}
+
+      </div>
+
+    </div>
+  </>
+)}
     </div>
   );
 }
